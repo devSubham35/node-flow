@@ -22,7 +22,7 @@ export function ThemeToggler() {
   return (
     <Button
       size="icon"
-      className="focus-visible:ring-0 border-none outline-none bg-primary/20 text-primary"
+      className="focus-visible:ring-0 border-none outline-none bg-primary/20 text-primary hover:bg-bg-primary"
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       {isDark ? (
