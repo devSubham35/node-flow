@@ -3,6 +3,7 @@
 import { z } from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTransition } from "react";
 import { GoLock } from "react-icons/go";
 import SocialLogin from "./SocialLogin";
 import { useForm } from "react-hook-form";
@@ -20,8 +21,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const LoginUI = () => {
-  
+
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     defaultValues: {
@@ -32,20 +34,23 @@ const LoginUI = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    await authClient.signIn.email(
-      {
-        callbackURL: "/",
-        email: data.email,
-        password: data.password,
-      },
-      {
-        onSuccess: () => router.push("/"),
-        onError: (ctx: ErrorContext) => {
-          toast.error(ctx.error.message);
+    startTransition(() => {
+      authClient.signIn.email(
+        {
+          callbackURL: "/",
+          email: data.email,
+          password: data.password,
         },
-      }
-    );
+        {
+          onSuccess: () => router.push("/"),
+          onError: (ctx: ErrorContext) => {
+            toast.error(ctx.error.message);
+          },
+        }
+      );
+    });
   };
+
 
   return (
     <Card className="w-[90%] max-w-sm shadow-md rounded-xl border border-border">
@@ -103,7 +108,7 @@ const LoginUI = () => {
               )}
             />
 
-            <Button type="submit" className="w-full mt-2">
+            <Button type="submit" className="w-full mt-2" loading={isPending}>
               Continue
             </Button>
           </form>
