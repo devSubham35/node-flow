@@ -3,6 +3,7 @@
 import { z } from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTransition } from "react";
 import SocialLogin from "./SocialLogin";
 import { GoLock } from "react-icons/go";
 import { useForm } from "react-hook-form";
@@ -23,6 +24,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 const RegisterUI = () => {
 
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     defaultValues: {
@@ -34,20 +36,22 @@ const RegisterUI = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
-    await authClient.signUp.email(
-      {
-        callbackURL: "/",
-        name: data.email,
-        email: data.email,
-        password: data.password,
-      },
-      {
-        onSuccess: () => router.push("/"),
-        onError: (ctx: ErrorContext) => {
-          toast.error(ctx.error.message);
+    startTransition(() => {
+      authClient.signUp.email(
+        {
+          callbackURL: "/",
+          name: data.email,
+          email: data.email,
+          password: data.password,
         },
-      }
-    );
+        {
+          onSuccess: () => router.push("/"),
+          onError: (ctx: ErrorContext) => {
+            toast.error(ctx.error.message);
+          },
+        }
+      );
+    });
   };
 
 
@@ -127,7 +131,7 @@ const RegisterUI = () => {
               )}
             />
 
-            <Button type="submit" className="w-full mt-2">
+            <Button type="submit" className="w-full mt-2" loading={isPending}>
               Continue
             </Button>
           </form>
